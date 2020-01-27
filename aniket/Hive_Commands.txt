@@ -1,0 +1,79 @@
+
+[cloudera@quickstart ~]$ hdfs dfs -copyFromLocal '/home/cloudera/Downloads/1_Hive/hospital_data.csv' '/user/cloudera/'
+
+hive> create database hosp;
+
+hive> show databases;
+
+hive> use hosp;
+
+hive> show tables;
+
+hive> create table h1(DRGDefinition string,ProviderId string,ProviderName string,ProviderStreetAddress string,ProviderCity string,ProviderState string,ProviderZipCode string,HospitalReferralRegionDescription string,TotalDischarges string,AverageCoveredCharges string,AverageTotalPayments string,AverageMedicarePayments string)row format delimited fields terminated by ',' lines terminated by '\n';
+
+hive> describe h1;
+
+hive> load data inpath '/user/cloudera/hospital_data.csv' into table h1;
+
+hive> select * from h1 limit 5;
+
+
+Question: Display  top 5 of Maximum AverageTotalPayments by state? 
+hive> select max(averagetotalpayments) as max_payment,providerstate from h1 group by providerstate order by max_payment desc limit 5;
+
+==============================================================================================================================================================================================================================================
+
+[cloudera@quickstart ~]$ hdfs dfs -copyFromLocal '/home/cloudera/Downloads/1_Hive/airline_data.csv' '/user/cloudera/'
+
+hive> create database airline;
+
+hive> use airline;
+
+hive> create table air(YEAR string,MONTH string,DAY string,DAY_OF_WEEK string,AIRLINE string,FLIGHT_NUMBER string,TAIL_NUMBER string,ORIGIN_AIRPORT string,DESTINATION_AIRPORT string,SCHEDULED_DEPARTURE string,DEPARTURE_TIME string,DEPARTURE_DELAY string,TAXI_OUT string,WHEELS_OFF string,SCHEDULED_TIME string,ELAPSED_TIME string,AIR_TIME string,DISTANCE string,WHEELS_ON string,TAXI_IN string,SCHEDULED_ARRIVAL string,ARRIVAL_TIME string,ARRIVAL_DELAY string,DIVERTED string,CANCELLED string)row format delimited fields terminated by ',' lines terminated by '\n';
+
+hive> load data inpath '/user/cloudera/airline_data.csv' into table air;
+
+hive> select * from air limit 5;
+
+***************************************PARTITIONING*********************************************************
+
+hive> create table air_partition(month string,day string) partitioned by(year string);
+
+hive> set hive.exec.dynamic.partition.mode=nonstrict;
+
+hive> insert overwrite table air_partition partition(year) select month,day,year from air;
+
+hive> select * from air_partition limit 10;
+
+************************************************************Bucketing********************************************
+
+[cloudera@quickstart ~]$ hdfs dfs -copyFromLocal '/home/cloudera/Downloads/1_Hive/real_estate_data.csv' '/user/cloudera/'
+
+hive> create table real_estate(street string,city string,zip string,state string,beds string,baths string,sq__ft string,type string,price string)row format delimited fields terminated by',' lines terminated by '\n';
+
+hive> load data inpath '/user/cloudera/real_estate_data.csv' into table real_estate;
+
+hive> select * from real_estate limit 5;
+
+hive> set hive.enforce.bucketing = true;
+
+hive> create table real_estate_bucket(street string,city string,zip string,state string,beds string,baths string,sq__ft string,type string,price string)clustered by (state) into 4 buckets row format delimited fields terminated by',' lines terminated by '\n';
+
+hive> from real_estate insert overwrite table real_estate_bucket select street,city,zip,state,beds,baths,sq__ft,type,price;
+
+hive> select * from real_estate_bucket limit 5;
+
+[cloudera@quickstart ~]$ hdfs dfs -ls /user/hive/warehouse/airline.db/real_estate_bucket
+
+======XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX============XXX
+
+
+
+
+
+
+
+
+
+
+

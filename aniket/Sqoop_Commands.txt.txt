@@ -1,0 +1,64 @@
+To change to MYSQL use:
+
+mysql -u root -p
+password: cloudera
+
+mysql> show databases; 
+
+mysql> create database oil;
+
+mysql> use oil;
+
+mysql> show tables;
+
+mysql> create table oil_data(District varchar(30),Distributer_name varchar(30),Buy_rateIN_million int,Sell_rateIN_million int,volumeIN_millioncubic_litter int,volumeOUT_millioncubic_litter int,Year int);
+
+****Remove the header line of 'oil_data.csv' before loading the data into table****
+
+mysql> load data infile '/home/cloudera/oil_data.csv' into table oil_data fields terminated by',' lines terminated by'\n';
+
+mysql> select * from oil_data limit 10;
+
+
+*****Creating PARQUET file in HDFS*********
+[cloudera@quickstart ~]$ sqoop import --connect jdbc:mysql://localhost/oil --table oil_data --username root --password cloudera -m 1 --as-parquetfile;
+
+==============================================================================================================================================================================================================================================
+****Importing data from 'MYSQL' to 'HIVE' through HDFS:
+
+mysql -u root -p
+password: cloudera
+
+mysql> show databases; 
+
+mysql> create database emp_details;
+
+mysql> use emp_details;
+
+mysql> show tables;
+
+mysql> create table emp(ID varchar(20),Job_Title varchar(30),Company varchar(30),Dept varchar(20),EmpName varchar(20),Salary int);
+
+mysql> load data infile '/home/cloudera/emp_details.csv' into table emp fields terminated by ',' lines terminated by '\n';
+
+mysql> select * from emp limit 10;
+
+[cloudera@quickstart ~]$ hive
+
+hive> create database emp;
+
+hive> use emp;
+
+[cloudera@quickstart ~]$ sqoop import --connect jdbc:mysql://localhost/emp_details --table emp --username root --password cloudera -m 1 --hive-import --create-hive-table --hive-table emp_hive --target-dir /user/cloudera/sqoopTOhive
+
+****Check whether data is loaded or not in HIVE Table through HUE using below path:
+/user/hive/warehouse/emp_hive
+
+
+
+
+
+
+
+
+
